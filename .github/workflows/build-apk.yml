@@ -10,10 +10,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: court-ocr-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: Build Android APK
+    name: Validate and Build Android APK
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout source
@@ -29,22 +34,62 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
-      - name: Check project files
+      - name: Check project structure
+        shell: bash
         run: |
+          set -euo pipefail
+
           test -f pubspec.yaml || {
-            echo "ERROR: pubspec.yaml not found"
+            echo "::error::pubspec.yaml is missing"
             exit 1
           }
+
           test -f lib/main.dart || {
-            echo "ERROR: lib/main.dart not found"
+            echo "::error::lib/main.dart is missing"
             exit 1
           }
-          echo "Flutter project files found."
+
+          test -d android || {
+            echo "::error::Android project directory is missing"
+            exit 1
+          }
+
+          test -f android/settings.gradle -o \
+               -f android/settings.gradle.kts || {
+            echo "::error::Android settings.gradle or settings.gradle.kts is missing"
+            exit 1
+          }
+
+          test -f android/gradlew || {
+            echo "::error::Gradle wrapper android/gradlew is missing"
+            exit 1
+          }
+
+          if [ ! -f android/app/build.gradle ] && \
+             [ ! -f android/app/build.gradle.kts ]; then
+            echo "::error::Missing android/app/build.gradle and build.gradle.kts"
+            echo "Restore the correct app-level Gradle file from your project."
+            echo "Do not create an empty Gradle file."
+            find android -maxdepth 3 -type f \
+              \( -name 'build.gradle' -o -name 'build.gradle.kts' \) \
+              -print
+            exit 1
+          fi
+
+          echo "Project structure checks passed."
+
+      - name: Show Flutter and Java versions
+        run: |
+          flutter --version
+          java -version
 
       - name: Show Dart classes
+        shell: bash
         run: |
-          grep -nE 'class[[:space:]]+[A-Za-z_][A-Za-z0-9_]*' lib/main.dart || true
+          grep -nE 'class[[:space:]]+[A-Za-z_][A-Za-z0-9_]*' \
+            lib/main.dart || true
 
       - name: Install Flutter dependencies
         run: flutter pub get
@@ -58,14 +103,22 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Verify APK
+      - name: Verify release APK
+        shell: bash
         run: |
+          set -euo pipefail
+
           APK="build/app/outputs/flutter-apk/app-release.apk"
-          if [ ! -f "$APK" ]; then
-            echo "ERROR: APK was not generated."
+
+          if [ ! -s "$APK" ]; then
+            echo "::error::Release APK is missing or empty"
+            find build -type f -name '*.apk' -print 2>/dev/null || true
             exit 1
           fi
+
+          echo "APK successfully generated:"
           ls -lh "$APK"
+          sha256sum "$APK"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
