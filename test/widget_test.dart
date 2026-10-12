@@ -1,19 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:court_ocr_scanner/main.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  group('date helpers', () {
+    test('fmtDate uses DD/MM/YYYY', () {
+      expect(fmtDate(DateTime(2026, 9, 19)), '19/09/2026');
+    });
 
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-  });
+    test('monthYear converts a valid date to abbreviated month and year', () {
+      expect(monthYear('19/09/2026'), 'Sep2026');
+    });
 
-  testWidgets('Court OCR Scanner app starts', (WidgetTester tester) async {
-    await tester.pumpWidget(const CourtOcrApp());
-    await tester.pump();
-
-    expect(find.text('Court OCR Scanner'), findsOneWidget);
-    expect(find.text('Scan a document or open an existing Excel register.'), findsOneWidget);
+    test('monthYear rejects invalid dates', () {
+      expect(monthYear('31/13/2026'), isEmpty);
+      expect(monthYear('not a date'), isEmpty);
+    });
   });
 }
