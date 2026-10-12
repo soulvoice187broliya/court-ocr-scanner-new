@@ -1,9 +1,11 @@
 name: Build Court OCR Scanner APK
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,12 +13,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -28,10 +30,17 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Verify source files
-        run: |
-          test -f pubspec.yaml
-          test -f lib/main.dart
+      - name: Check Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze project source
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
 
       - name: Generate Android platform files if missing
         run: |
@@ -39,12 +48,12 @@ jobs:
             flutter create --platforms=android --org com.courtocr --project-name court_ocr_scanner .
           fi
 
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Analyze Dart source
-        run: flutter analyze
-        continue-on-error: true
+      - name: Add Chinese ML Kit recognizer dependency
+        run: |
+          FILE=android/app/build.gradle.kts
+          if ! grep -q 'text-recognition-chinese' "$FILE"; then
+            sed -i '/^dependencies {/a\    implementation("com.google.mlkit:text-recognition-chinese:16.0.1")' "$FILE"
+          fi
 
       - name: Build release APK
         run: flutter build apk --release
@@ -55,4 +64,3 @@ jobs:
           name: Court-OCR-Scanner-APK
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
-          retention-days: 14
