@@ -1,3 +1,4 @@
+
 name: court_ocr_scanner
 description: Court document OCR scanner with editable Excel register export.
 publish_to: "none"
