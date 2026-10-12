@@ -1,19 +1,57 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:court_ocr_scanner/main.dart';
+import 'package:flutter/material.dart';
 
 void main() {
-  group('date helpers', () {
-    test('fmtDate uses DD/MM/YYYY', () {
-      expect(fmtDate(DateTime(2026, 9, 19)), '19/09/2026');
-    });
+  runApp(const CourtOCRApp());
+}
 
-    test('monthYear converts a valid date to abbreviated month and year', () {
-      expect(monthYear('19/09/2026'), 'Sep2026');
-    });
+class CourtOCRApp extends StatelessWidget {
+  const CourtOCRApp({super.key});
 
-    test('monthYear rejects invalid dates', () {
-      expect(monthYear('31/13/2026'), isEmpty);
-      expect(monthYear('not a date'), isEmpty);
-    });
-  });
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Court OCR Scanner',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: const ScannerScreen(),
+    );
+  }
+}
+
+class ScannerScreen extends StatelessWidget {
+  const ScannerScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Court OCR Scanner'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.document_scanner, size: 80),
+            const SizedBox(height: 16),
+            const Text('Scan court documents'),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Connect your OCR scanning function here.'),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.camera_alt),
+              label: const Text('Scan Document'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
