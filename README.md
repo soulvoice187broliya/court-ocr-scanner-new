@@ -23,3 +23,10 @@ GitHub Actions automatically builds the release APK on pushes to `main` or via *
 - Registration numbering and daily serial behavior should be validated against the real workbook layout. This starter counts existing matching court names and scan dates in the loaded workbook.
 - The app exports an Excel file. Direct Google Sheets synchronization is not configured in this source.
 - Test on a real Android device; GitHub Actions build success does not prove runtime correctness.
+
+## Version 2 update
+- Keeps an editable review form before Excel export.
+- Uses the requested target columns A, B, C, D, E, F, G, H, I, J, K, P, Q, R, T, W, AE, AF and AM.
+- Includes the configurable W assignee list and AE/AF/AM dropdowns.
+- Improves common order-type and designation recognition, conservative labeled-address extraction, and flags when no FIR/case number is detected.
+- OCR is heuristic and must be reviewed before official use. It does not guarantee legal-data accuracy.

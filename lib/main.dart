@@ -100,8 +100,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final Map<String, String> _values = {};
   final List<String> _defaultAssignees = [
     'SHO CITY', 'SHO BAHIN', 'EHC SUBHASH CHAND', 'SPO RAMESH 246',
-    'CT RAVI 1497 PWL', 'EHC KARTAR 118', 'CT AJAY 99', 'CT NASEEM KHAN 473',
-    'EHC HASAN'
+    'CT RAVI 1497 PWL', 'EHC KARTAR 118', 'CT AJAY 99',
+    'CT NASEEM KHAN 473', 'EHC HASAN'
   ];
   List<String> _assignees = [];
   String _personCategory = 'POLICE';
@@ -239,12 +239,14 @@ class _RegisterPageState extends State<RegisterPage> {
     }
 
     const orderTypes = [
-      'NON BAILABLE WARRANT', 'NON-BAILABLE WARRANT', 'BAILABLE WARRANT',
-      'WARRANT OF ARREST', 'SUMMON', 'PROCLAMATION', 'NOTICE', 'BAIL',
+      'NON BAILABLE WARRANT', 'NON-BAILABLE WARRANT', 'NONBAILABLE WARRANT',
+      'BAILABLE WARRANT', 'WARRANT OF ARREST', 'ARREST WARRANT',
+      'WARRANT OF ARREST SUMMON', 'SUMMONS', 'SUMMON', 'PROCLAMATION',
+      'NOTICE', 'BAIL',
     ];
     for (final order in orderTypes) {
       if (all.toLowerCase().contains(order.toLowerCase())) {
-        _values['H'] = order;
+        _values['H'] = order.replaceAll('-', ' ');
         break;
       }
     }
@@ -268,14 +270,37 @@ class _RegisterPageState extends State<RegisterPage> {
       orElse: () => '',
     );
     if (courtLine.isNotEmpty) _values['I'] = courtLine;
-    final designation = RegExp(r'\b(SHO|DSP|SP|SI|ASI|HC|EHC|LHC|CT|RCT|ADVOCATE|LEGAL ADVISOR|MHC|NODAL OFFICER|SPO)\b', caseSensitive: false).firstMatch(all);
-    if (designation != null) _values['Q'] = designation.group(0)!.toUpperCase();
+    final designation = RegExp(
+      r'\b(LEGAL\s+ADVISOR|NODAL\s+OFFICER|DIRECTOR\s+RFSL|DIRECTOR\s+READER|HEAD\s+MASTER|HOME\s+GUARD|ADVOCATE|SHO|DSP|SP|SI|LSI|PSI|ASI|ESI|EHC|LHC|L\s*/\s*ASI|L\s*/\s*CT|RCT|HC|CT|MHC|SPO|MM|HGH|CLERK)\b',
+      caseSensitive: false,
+    ).firstMatch(all);
+    if (designation != null) _values['Q'] = designation.group(0)!.toUpperCase().replaceAll(RegExp(r'\s*/\s*'), '/');
 
     final nameLine = lines.firstWhere(
-      (line) => RegExp(r'\b(?:VERSUS|VS\.?|STATE OF|IN THE MATTER OF)\b', caseSensitive: false).hasMatch(line),
+      (line) => RegExp(r'\b(?:VERSUS|VS\.?|STATE OF|IN THE MATTER OF|S/O|D/O|W/O|F/O|SON OF|DAUGHTER OF|WIFE OF)\b', caseSensitive: false).hasMatch(line),
       orElse: () => '',
     );
     if (nameLine.isNotEmpty) _values['R'] = nameLine;
+
+    // Address extraction is deliberately conservative: only fill T when the document
+    // has a clear address label. Always review OCR before exporting.
+    final addressMatch = RegExp(
+      r'(?:PRESENT\s+ADDRESS|ADDRESS|R/O|RESIDENT\s+OF|RESIDENCE)\s*[:.-]?\s*([^\n]{5,180})',
+      caseSensitive: false,
+    ).firstMatch(all);
+    if (addressMatch != null) {
+      _values['T'] = addressMatch.group(1)!.trim().replaceAll(RegExp(r'\s{2,}'), ' ');
+    }
+
+    final roleText = all.toLowerCase();
+    if (roleText.contains('witness')) _values['AM'] = 'WITNESS';
+    if (roleText.contains('accused') || roleText.contains('accused person')) _values['AM'] = 'ACCUSED';
+    if (RegExp(r'\bpolice\b|\bsh[o0]\b|\bconstable\b|\bhead constable\b', caseSensitive: false).hasMatch(all)) {
+      _values['AE'] = 'POLICE';
+    }
+
+    // Show likely missing/uncertain case identifiers for manual correction.
+    if ((_values['E'] ?? '').isEmpty) _values['E'] = '*NOTE* CASE NO NOT FOUND';
     _syncControllers();
   }
 
@@ -547,7 +572,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 Text('Review and edit before saving', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
-                const Text('OCR is an estimate. Verify court, case number, dates, person and address before exporting.'),
+                const Text('Review and correct all OCR fields before saving. Missing case numbers are flagged. Address, person category, jurisdiction and role may need manual confirmation.'),
                 const SizedBox(height: 12),
                 ...fieldSpecs.map((spec) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
