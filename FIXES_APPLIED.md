@@ -1,12 +1,30 @@
-# Fixes applied
+import 'package:flutter_test/flutter_test.dart';
+import 'package:court_ocr_scanner/main.dart';
 
-- Package name confirmed from pubspec.yaml: `court_ocr_scanner`.
-- Replaced test imports from `../lib/...` with `package:court_ocr_scanner/...`.
-- Rebuilt widget test with a SharedPreferences mock.
-- Added date helper tests for DD/MM/YYYY formatting and month/year conversion.
-- Made `_personCategory` final to address the reported analyzer info.
-- Removed `continue-on-error: true` from `flutter analyze`, so CI now reports analyzer failures honestly.
+void main() {
+  group('Date Helpers', () {
+    test('fmtDate formats DD/MM/YYYY', () {
+      expect(fmtDate(DateTime(2026, 9, 19)), '19/09/2026');
+    });
 
-## Verification
+    test('monthYear converts valid date', () {
+      expect(monthYear('19/09/2026'), 'Sep2026');
+    });
 
-This archive is source-patched. A successful APK build is not claimed until the GitHub Actions run completes.
+    test('monthYear rejects invalid month', () {
+      expect(monthYear('19/13/2026'), isEmpty);
+    });
+
+    test('monthYear rejects invalid day', () {
+      expect(monthYear('31/09/2026'), isEmpty);
+    });
+
+    test('monthYear rejects invalid format', () {
+      expect(monthYear('not a date'), isEmpty);
+    });
+
+    test('monthYear rejects empty input', () {
+      expect(monthYear(''), isEmpty);
+    });
+  });
+}
