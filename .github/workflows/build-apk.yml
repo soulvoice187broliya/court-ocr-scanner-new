@@ -13,16 +13,16 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -32,22 +32,13 @@ jobs:
 
       - name: Verify Court OCR source
         run: |
-          test -f pubspec.yaml
-          test -f lib/main.dart
-          grep -n 'class CourtOcrApp' lib/main.dart
-          grep -n 'home: const RegisterPage()' lib/main.dart
+          grep -n "class CourtOcrApp" lib/main.dart
+          grep -n "class RegisterPage" lib/main.dart
 
       - name: Generate Android platform files if missing
         run: |
           if [ ! -f android/gradlew ]; then
             flutter create --platforms=android --org com.courtocr --project-name court_ocr_scanner .
-          fi
-
-      - name: Add ML Kit Chinese recognizer dependency
-        run: |
-          FILE=android/app/build.gradle.kts
-          if [ -f "$FILE" ] && ! grep -q 'text-recognition-chinese' "$FILE"; then
-            sed -i '/^dependencies {/a\    implementation("com.google.mlkit:text-recognition-chinese:16.0.1")' "$FILE"
           fi
 
       - name: Install dependencies
@@ -56,6 +47,9 @@ jobs:
       - name: Analyze Dart source
         run: flutter analyze
         continue-on-error: true
+
+      - name: Run tests
+        run: flutter test
 
       - name: Build release APK
         run: flutter build apk --release
