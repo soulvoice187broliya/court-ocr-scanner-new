@@ -104,7 +104,7 @@ class _RegisterPageState extends State<RegisterPage> {
     'CT NASEEM KHAN 473', 'EHC HASAN'
   ];
   List<String> _assignees = [];
-  String _personCategory = 'POLICE';
+  final String _personCategory = 'POLICE';
   String _jurisdiction = 'WITHIN DISTRICT';
   String _personRole = 'ACCUSED';
   String _rawText = '';
@@ -366,10 +366,7 @@ class _RegisterPageState extends State<RegisterPage> {
       await file.writeAsBytes(bytes, flush: true);
       if (!mounted) return;
       setState(() { _busy = false; _status = 'Excel ready. Share or save the exported workbook.'; });
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: 'Court OCR Scanner Excel register',
-      ));
+      await Share.shareXFiles([XFile(file.path)], text: 'Court OCR Scanner Excel register');
     } catch (e) {
       if (!mounted) return;
       setState(() { _busy = false; _status = 'Excel export failed: $e'; });

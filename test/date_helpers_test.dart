@@ -1,17 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/main.dart';
+import 'package:court_ocr_scanner/main.dart';
 
 void main() {
   group('date helpers', () {
-    test('formats dates as DD/MM/YYYY', () {
-      expect(fmtDate(DateTime(2026, 10, 9)), '09/10/2026');
+    test('fmtDate uses DD/MM/YYYY', () {
+      expect(fmtDate(DateTime(2026, 9, 19)), '19/09/2026');
     });
 
-    test('converts scan date to month and year', () {
-      expect(monthYear('09/10/2026'), 'Oct2026');
+    test('monthYear converts a valid date to abbreviated month and year', () {
+      expect(monthYear('19/09/2026'), 'Sep2026');
     });
 
-    test('returns empty month/year for invalid dates', () {
+    test('monthYear rejects invalid dates', () {
       expect(monthYear('31/13/2026'), isEmpty);
       expect(monthYear('not a date'), isEmpty);
     });

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../lib/main.dart';
+import 'package:court_ocr_scanner/main.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,8 +13,7 @@ void main() {
     await tester.pumpWidget(const CourtOcrApp());
     await tester.pump();
 
-    expect(find.text('Court OCR Scanner'), findsWidgets);
-    expect(find.text('Scan document'), findsOneWidget);
-    expect(find.text('Save / Export Excel'), findsOneWidget);
+    expect(find.text('Court OCR Scanner'), findsOneWidget);
+    expect(find.text('Scan a document or open an existing Excel register.'), findsOneWidget);
   });
 }
