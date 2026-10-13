@@ -363,7 +363,7 @@ class _RegisterPageState extends State<RegisterPage> {
       await file.writeAsBytes(bytes, flush: true);
       if (!mounted) return;
       setState(() { _busy = false; _status = 'Excel ready. Share or save the exported workbook.'; });
-      await Share.shareXFiles([XFile(file.path)], text: 'Court OCR Scanner Excel register');
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: 'Court OCR Scanner Excel register'));
     } catch (e) {
       if (!mounted) return;
       setState(() { _busy = false; _status = 'Excel export failed: $e'; });
