@@ -104,9 +104,6 @@ class _RegisterPageState extends State<RegisterPage> {
     'CT NASEEM KHAN 473', 'EHC HASAN'
   ];
   List<String> _assignees = [];
-  String _personCategory = 'POLICE';
-  String _jurisdiction = 'WITHIN DISTRICT';
-  String _personRole = 'ACCUSED';
   String _rawText = '';
   String? _workbookPath;
   Uint8List? _workbookBytes;
@@ -139,7 +136,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getStringList('assignees');
     if (!mounted) return;
-    setState(() => _assignees = saved == null ? List.of(_defaultAssignees) : saved);
+    setState(() => _assignees = saved ?? List<String>.of(_defaultAssignees));
   }
 
   Future<void> _saveAssignees() async {
@@ -366,10 +363,7 @@ class _RegisterPageState extends State<RegisterPage> {
       await file.writeAsBytes(bytes, flush: true);
       if (!mounted) return;
       setState(() { _busy = false; _status = 'Excel ready. Share or save the exported workbook.'; });
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: 'Court OCR Scanner Excel register',
-      ));
+      await Share.shareXFiles([XFile(file.path)], text: 'Court OCR Scanner Excel register');
     } catch (e) {
       if (!mounted) return;
       setState(() { _busy = false; _status = 'Excel export failed: $e'; });
@@ -443,7 +437,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget _buildField(FieldSpec spec) {
     if (spec.column == 'W') {
       return DropdownButtonFormField<String>(
-        value: (_values['W'] ?? '').isNotEmpty && _assignees.contains(_values['W']) ? _values['W'] : null,
+          initialValue: (_values['W'] ?? '').isNotEmpty && _assignees.contains(_values['W']) ? _values['W'] : null,
         decoration: InputDecoration(labelText: '${spec.column} — ${spec.label}'),
         items: [
           ..._assignees.map((e) => DropdownMenuItem(value: e, child: Text(e))),
@@ -478,7 +472,7 @@ class _RegisterPageState extends State<RegisterPage> {
               : ['WITNESS', 'ACCUSED'];
       final current = _values[spec.column] ?? '';
       return DropdownButtonFormField<String>(
-        value: options.contains(current) ? current : options.first,
+          initialValue: options.contains(current) ? current : options.first,
         decoration: InputDecoration(labelText: '${spec.column} — ${spec.label}'),
         items: options.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
         onChanged: (v) { if (v != null) _setValue(spec.column, v); },
