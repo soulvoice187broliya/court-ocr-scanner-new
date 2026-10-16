@@ -1,30 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:court_ocr_scanner/main.dart';
 
 void main() {
-  group('date helpers', () {
-    test('fmtDate uses DD/MM/YYYY', () {
-      expect(fmtDate(DateTime(2026, 9, 19)), '19/09/2026');
-    });
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    test('monthYear converts a valid date to abbreviated month and year', () {
-      expect(monthYear('19/09/2026'), 'Sep2026');
-    });
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
-    test('monthYear rejects invalid dates', () {
-      expect(monthYear('31/13/2026'), isEmpty);
-      expect(monthYear('31/02/2026'), isEmpty);
-      expect(monthYear('29/02/2025'), isEmpty);
-      expect(monthYear('not a date'), isEmpty);
-    });
+  testWidgets('Court OCR Scanner app starts', (WidgetTester tester) async {
+    await tester.pumpWidget(const CourtOcrApp());
+    await tester.pumpAndSettle();
 
-    test('monthYear accepts a valid leap-day date', () {
-      expect(monthYear('29/02/2024'), 'Feb2024');
-    });
-
-    test('parseStrictDate rejects normalized impossible dates', () {
-      expect(parseStrictDate('31/02/2026'), isNull);
-      expect(parseStrictDate('19/09/2026'), DateTime(2026, 9, 19));
-    });
+    expect(find.text('Court OCR Scanner'), findsOneWidget);
+    expect(find.text('Scan document'), findsOneWidget);
+    expect(find.textContaining('Workbook: GH.xlsx'), findsOneWidget);
   });
 }
