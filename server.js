@@ -55,3 +55,4 @@ app.post('/ocr', async (req, res) => {
 });
 
 const port = Number(process.env.PORT || 8080);
+app.listen(port, '0.0.0.0', () => console.log(`Cloud Vision OCR backend listening on ${port}`));
