@@ -1,0 +1,16 @@
+- name: Ensure Android project exists
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -f android/gradlew ] || \
+             { [ ! -f android/app/build.gradle ] && [ ! -f android/app/build.gradle.kts ]; }; then
+            echo "Android project missing; creating it once."
+            flutter create --platforms=android --org com.courtocr --project-name court_ocr_scanner .
+          fi
+
+          test -f android/gradlew
+          if [ ! -f android/app/build.gradle ] && [ ! -f android/app/build.gradle.kts ]; then
+            echo "::error::Flutter did not generate an app-level Gradle file."
+            exit 1
+          fi
