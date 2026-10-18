@@ -1,9 +1,59 @@
+# Flutter / Dart
 .dart_tool/
 .packages
 .pub/
 build/
+
+# Flutter generated plugin files
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Android
+**/local.properties
+**/.gradle
+/android/.gradle
+/android/**/build/
+android/app/*.keystore
+key.properties
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/engine/
+ios/Runner/GeneratedPluginRegistrant.* 
+ios/Runner/Generated.xcconfig
+
+# Xcode
+*.xcworkspace
+*.xcuserstate
+*.xcuserdatad
+*.xcodeproj/xcuserdata/
+
+# IDEs
 .idea/
 .vscode/
 *.iml
+
+# macOS
+.DS_Store
+
+# Logs, coverage, reports
+*.log
+coverage/
+test_outputs/
+
+# Environment / secrets
+.env
+.env.* 
+google-services.json
+GoogleService-Info.plist
+
+# Node / front-end support files (if present)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Misc
+*.lock (do NOT ignore pubspec.lock for apps — see note below)
