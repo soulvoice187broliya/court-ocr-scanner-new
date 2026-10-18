@@ -1,4 +1,4 @@
-name: court_ocr_scanner
+name: court_ocr_scanner_new
 description: Court document OCR scanner with editable Excel register export.
 publish_to: "none"
 version: 1.0.0+3
@@ -27,3 +27,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/GH.xlsx
+    
